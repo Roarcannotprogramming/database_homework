@@ -41,7 +41,7 @@
          <x>11</x>
          <y>11</y>
          <width>363</width>
-         <height>22</height>
+         <height>23</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -82,8 +82,8 @@
         <rect>
          <x>11</x>
          <y>45</y>
-         <width>361</width>
-         <height>25</height>
+         <width>366</width>
+         <height>30</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -154,15 +154,15 @@
         <rect>
          <x>420</x>
          <y>0</y>
-         <width>451</width>
+         <width>711</width>
          <height>71</height>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 48pt &quot;楷体&quot;;</string>
+        <string notr="true">font: 36pt &quot;华文彩云&quot;;</string>
        </property>
        <property name="text">
-        <string>虚拟智慧图书馆</string>
+        <string>图书管理系统</string>
        </property>
        <property name="textFormat">
         <enum>Qt::AutoText</enum>
@@ -233,7 +233,7 @@
              <x>20</x>
              <y>20</y>
              <width>161</width>
-             <height>471</height>
+             <height>508</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -415,7 +415,7 @@
              <x>20</x>
              <y>20</y>
              <width>161</width>
-             <height>301</height>
+             <height>307</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -552,7 +552,7 @@
          <bool>false</bool>
         </attribute>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -585,16 +585,9 @@
            </property>
           </spacer>
          </item>
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>邮箱</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>20</x>

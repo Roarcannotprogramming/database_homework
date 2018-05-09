@@ -41,6 +41,9 @@
       <property name="maxLength">
        <number>30</number>
       </property>
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
       <property name="placeholderText">
        <string>密码</string>
       </property>

@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowTitle("图书管理系统");
     dbCreat();
     user_type=VISITOR;
     id="visitor";
