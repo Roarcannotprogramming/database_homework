@@ -8,6 +8,7 @@
 #include <QSqlDatabase>
 #include <QSqlTableModel>
 #include <QMessageBox>
+#include <QDate>
 
 namespace Ui {
 class Insert;

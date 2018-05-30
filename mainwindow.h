@@ -27,6 +27,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    QString id;
+    QString get_id();
     ~MainWindow();
 
 
@@ -35,13 +37,14 @@ private:
     QSqlTableModel *UsrModel;
     QSqlTableModel *LoanModel;
     QSqlTableModel *UsrLoanModel;
+    QSqlTableModel *OperModel;
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QTimer *timer;
 
     int user_type;
     int book_store;
-    QString id;
+
 
     enum BkIndex
     {
@@ -71,6 +74,14 @@ private:
         LBkId=1,
         LDate=2,
         LBackDate=3
+    };
+
+    enum OperationIndex{
+        M_id=0,
+        Oper=1,
+        Bk_id=2,
+        Op_num=3,
+        Op_date=4
     };
 
     enum{MANAGER,USER,VISITOR};

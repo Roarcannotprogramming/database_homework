@@ -74,7 +74,7 @@
        <number>20</number>
       </property>
       <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
+       <enum>QLineEdit::Normal</enum>
       </property>
       <property name="placeholderText">
        <string>邮箱</string>

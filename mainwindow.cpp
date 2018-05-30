@@ -8,6 +8,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle("图书管理系统");
     dbCreat();
+    ui->tabWidget->removeTab(1);
+    ui->tabWidget->removeTab(2);
+    ui->tabWidget->removeTab(3);
+    ui->tabWidget->removeTab(4);
     user_type=VISITOR;
     id="visitor";
     UiUpdate();
@@ -73,6 +77,18 @@ bool MainWindow::dbCreat()
         LoanModel->setHeaderData(LBackDate,Qt::Horizontal,"应还日期");
         LoanModel->select();
         ui->tableView_4->setModel(LoanModel);
+
+        OperModel= new QSqlTableModel(this);
+        OperModel->setTable("manager_operation");
+        OperModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+        OperModel->sort(Op_date,Qt::DescendingOrder);
+        OperModel->setHeaderData(M_id,Qt::Horizontal,"管理员ID");
+        OperModel->setHeaderData(Oper,Qt::Horizontal,"操作");
+        OperModel->setHeaderData(Bk_id,Qt::Horizontal,"书号");
+        OperModel->setHeaderData(Op_num,Qt::Horizontal,"改动数量");
+        OperModel->setHeaderData(Op_date,Qt::Horizontal,"改动时间");
+        OperModel->select();
+        ui->tableView_5->setModel(OperModel);
 
            qDebug() << "Database Create Sucessfully!";
            return true;
@@ -188,6 +204,7 @@ void MainWindow::UiUpdate()
         ui->checkBox_3->hide();
         ui->tabWidget->addTab(ui->tab_2,"用户管理");
         ui->tabWidget->addTab(ui->tab_4,"借阅信息");
+        ui->tabWidget->addTab(ui->tab_5,"操作管理");
         ui->label->setText("管理员："+id);
         break;
     }
@@ -255,7 +272,10 @@ void MainWindow::on_pushButton_4_clicked()
 {
     Insert *insert=new Insert(this);
     insert->exec();
+    QSqlQuery query;
+    query.exec("update manager_operation set manager_id = '" + id + "' where manager_id = 'a_temp_id'");
     BkModel->select();
+    OperModel->select();
 }
 
 //注销
@@ -285,6 +305,12 @@ void MainWindow::on_pushButton_5_clicked()
 void MainWindow::on_pushButton_3_clicked()
 {
     int curRow=ui->tableView->currentIndex().row();
+    QString book_id = BkModel->record(curRow).value(BkId).toString();
+    int oper_num = BkModel->record(curRow).value(BkTotal).toInt();
+    QSqlQuery query;
+    QDate d = QDate::currentDate();
+    QString date = d.toString("yyyy-MM-dd");
+
     BkModel->removeRow(curRow);
     int ok=QMessageBox::warning(this,"delete","确定要删除吗？",
                                 QMessageBox::Yes,QMessageBox::No);
@@ -294,6 +320,14 @@ void MainWindow::on_pushButton_3_clicked()
     }
     else {
         BkModel->submitAll();
+        query.exec("insert into manager_operation values('"+
+                   id                   + "'," +
+                   "0"                  + ",'" +
+                   book_id              + "','" +
+                   oper_num             + "','" +
+                   date                 +"')"
+                   );
+        OperModel->select();
     }
 }
 
@@ -344,11 +378,33 @@ void MainWindow::on_pushButton_13_clicked()
 void MainWindow::on_pushButton_2_clicked()
 {
     int curRow=ui->tableView->currentIndex().row();
+    int cur_num = BkModel->record(curRow).value(BkStore).toInt();
+    int cur_bk_brw = UsrModel->record(0).value(UsrLoan).toInt();
+    int max_bk_brw = UsrModel->record(0).value(UsrMax).toInt();
+    if(cur_bk_brw>= max_bk_brw){
+        QMessageBox::critical(this,"Error!", "你的借书量达到上限！", QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+
     QString book=BkModel->record(curRow).value(BkId).toString();
     QDate d=QDate::currentDate();
     QString date=d.toString("yyyy-MM-dd");
     QDate bd=d.addMonths(1);
     QString back_date=bd.toString("yyyy-MM-dd");
+
+    QSqlQuery query;
+    query.exec("select * from loan where user_id = '" + id + "' and book_id ='" + book + "'");
+    if(query.next()){
+        QMessageBox::critical(this, "Error!", "你已经借阅过这本书了！",
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+
+    if(cur_num<=0){
+        QMessageBox::critical(this,"Error!", "本数不足！",QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+
     int rowNum = LoanModel->rowCount();
     QSqlRecord record = LoanModel->record();
     record.setValue("user_id",id);
@@ -356,7 +412,7 @@ void MainWindow::on_pushButton_2_clicked()
     record.setValue("loan_date",date);
     record.setValue("back_date",back_date);
     LoanModel->insertRecord(rowNum,record);
-    int ok=QMessageBox::warning(this,"delete","确定要借阅吗？",
+    int ok=QMessageBox::warning(this,"Question","确定要借阅吗？",
                                 QMessageBox::Yes,QMessageBox::No);
     if(ok==QMessageBox::No)
     {
@@ -365,6 +421,18 @@ void MainWindow::on_pushButton_2_clicked()
     else {
         LoanModel->submitAll();
         UsrLoanModel->select();
+        //int cur_num = BkModel->record(curRow).value(BkStore).toInt();
+        cur_num -= 1;
+        BkModel->setData(BkModel->index(curRow, BkStore), cur_num);
+        BkModel->submitAll();
+        BkModel->select();
+
+        UsrModel->setFilter("id = '" + id + "'");
+
+        UsrModel->setData(UsrModel->index(0,UsrLoan), cur_bk_brw+1);
+        UsrModel->submitAll();
+        UsrModel->setFilter("");
+        UsrModel->select();
     }
 }
 
@@ -372,6 +440,21 @@ void MainWindow::on_pushButton_2_clicked()
 void MainWindow::on_pushButton_15_clicked()
 {
     int curRow=ui->tableView_3->currentIndex().row();
+    QString ret_book_id = UsrLoanModel->record(curRow).value(LBkId).toString();
+    /*QSqlQuery query;
+    query.exec("update book set store = store + 1 ");*/
+    BkModel->setFilter("id = '" + ret_book_id + "'");
+    BkModel->select();
+    if(BkModel->rowCount() == 1){
+        int cur_num = BkModel->record(0).value(BkStore).toInt();
+        BkModel->setData(BkModel->index(0, BkStore), cur_num+1);
+        BkModel->submitAll();
+        BkModel->setFilter("");
+        BkModel->select();
+    }
+
+
+
     UsrLoanModel->removeRow(curRow);
     int ok=QMessageBox::warning(this,"back","确定要还书吗？",
                                 QMessageBox::Yes,QMessageBox::No);
@@ -382,6 +465,13 @@ void MainWindow::on_pushButton_15_clicked()
     else {
         UsrLoanModel->submitAll();
         LoanModel->select();
+
+        UsrModel->setFilter("id = '" + id + "'");
+        int cur_bk_brw = UsrModel->record(0).value(UsrLoan).toInt();
+        UsrModel->setData(UsrModel->index(0,UsrLoan), cur_bk_brw-1);
+        UsrModel->submitAll();
+        UsrModel->setFilter("");
+        UsrModel->select();
     }
 }
 
@@ -440,4 +530,9 @@ void MainWindow::on_pushButton_17_clicked()
 {
    UsrModel->setTable("user");
    UsrModel->select();
+}
+
+//123
+QString MainWindow::get_id(){
+    return id;
 }
