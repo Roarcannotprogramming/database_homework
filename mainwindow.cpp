@@ -323,8 +323,8 @@ void MainWindow::on_pushButton_3_clicked()
         query.exec("insert into manager_operation values('"+
                    id                   + "'," +
                    "0"                  + ",'" +
-                   book_id              + "','" +
-                   oper_num             + "','" +
+                   book_id              + "'," +
+                   oper_num             + ",'" +
                    date                 +"')"
                    );
         OperModel->select();
